@@ -1,0 +1,699 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Grounds for Growth — Coffee Shop Analytics | Oluwatosin Ogunwale</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400;1,700&family=DM+Mono:wght@300;400;500&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
+<style>
+  *, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+
+  :root {
+    --cream:  #F5F0E8;
+    --brown:  #3E2723;
+    --mid:    #6D4C41;
+    --gold:   #C8962B;
+    --light:  #D7CCC8;
+    --text:   #1A1208;
+    --muted:  #8D7355;
+    --white:  #FFFDF9;
+    --accent: #A0522D;
+  }
+
+  html { scroll-behavior: smooth; }
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--cream);
+    color: var(--text);
+    overflow-x: hidden;
+    cursor: none;
+  }
+
+  /* ── CURSOR ── */
+  .cursor { position:fixed; width:10px; height:10px; background:var(--gold); border-radius:50%; pointer-events:none; z-index:9999; transform:translate(-50%,-50%); transition:width .2s,height .2s; mix-blend-mode:multiply; }
+  .cursor-ring { position:fixed; width:32px; height:32px; border:1.5px solid var(--brown); border-radius:50%; pointer-events:none; z-index:9998; transform:translate(-50%,-50%); transition:all .35s cubic-bezier(.23,1,.32,1); opacity:.45; }
+
+  /* ── NOISE ── */
+  body::before { content:''; position:fixed; inset:0; background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E"); pointer-events:none; z-index:0; opacity:.4; }
+
+  /* ── NAV ── */
+  nav { position:fixed; top:0; left:0; right:0; z-index:100; display:flex; align-items:center; justify-content:space-between; padding:1.2rem 4rem; background:rgba(245,240,232,0.9); backdrop-filter:blur(12px); border-bottom:1px solid rgba(62,39,35,0.1); }
+  .nav-logo { font-family:'Playfair Display',serif; font-size:1.2rem; font-weight:700; color:var(--brown); text-decoration:none; }
+  .nav-logo span { color:var(--gold); }
+  .nav-back { font-family:'DM Mono',monospace; font-size:.75rem; color:var(--muted); text-decoration:none; letter-spacing:.08em; text-transform:uppercase; display:flex; align-items:center; gap:.5rem; transition:color .2s; }
+  .nav-back:hover { color:var(--brown); }
+  .nav-back::before { content:'←'; }
+
+  /* ── HERO ── */
+  .hero {
+    min-height: 100vh;
+    display: grid;
+    grid-template-rows: 1fr auto;
+    background: var(--brown);
+    position: relative;
+    overflow: hidden;
+    padding-top: 80px;
+  }
+
+  /* animated coffee rings background */
+  .hero-rings {
+    position:absolute; inset:0; overflow:hidden; opacity:.06;
+  }
+  .ring {
+    position:absolute; border-radius:50%;
+    border: 1px solid var(--gold);
+    animation: expand 8s ease-out infinite;
+  }
+  .ring:nth-child(1) { width:300px; height:300px; top:10%; left:60%; animation-delay:0s; }
+  .ring:nth-child(2) { width:500px; height:500px; top:5%; left:55%; animation-delay:1.5s; }
+  .ring:nth-child(3) { width:700px; height:700px; top:0%; left:50%; animation-delay:3s; }
+  .ring:nth-child(4) { width:200px; height:200px; top:50%; left:10%; animation-delay:2s; }
+  .ring:nth-child(5) { width:400px; height:400px; top:45%; left:5%; animation-delay:4s; }
+  @keyframes expand { 0%{transform:scale(.8);opacity:0} 50%{opacity:1} 100%{transform:scale(1.2);opacity:0} }
+
+  .hero-content {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 4rem;
+    padding: 5rem 6rem 3rem;
+    align-items: center;
+    position: relative; z-index: 1;
+  }
+
+  .hero-tag {
+    font-family:'DM Mono',monospace; font-size:.72rem; color:var(--gold);
+    letter-spacing:.2em; text-transform:uppercase; margin-bottom:1.5rem;
+    display:flex; align-items:center; gap:1rem;
+    opacity:0; animation:fadeUp .6s .3s forwards;
+  }
+  .hero-tag::before { content:''; width:28px; height:1px; background:var(--gold); }
+
+  .hero-title {
+    font-family:'Playfair Display',serif; font-size:clamp(3rem,5vw,5rem);
+    font-weight:900; line-height:.95; color:var(--cream); margin-bottom:1.5rem;
+    opacity:0; animation:fadeUp .7s .5s forwards;
+  }
+  .hero-title em { color:var(--gold); font-style:italic; display:block; }
+
+  .hero-subtitle {
+    font-size:1rem; color:var(--light); line-height:1.7; font-weight:300;
+    max-width:460px; margin-bottom:2.5rem;
+    opacity:0; animation:fadeUp .7s .7s forwards;
+  }
+
+  .hero-meta {
+    display:flex; gap:2rem; flex-wrap:wrap;
+    opacity:0; animation:fadeUp .7s .9s forwards;
+  }
+  .meta-item { }
+  .meta-label { font-family:'DM Mono',monospace; font-size:.65rem; color:var(--muted); letter-spacing:.12em; text-transform:uppercase; margin-bottom:.3rem; }
+  .meta-value { font-size:.92rem; color:var(--cream); font-weight:500; }
+
+  /* hero right — big stat display */
+  .hero-right {
+    display:flex; flex-direction:column; gap:1px;
+    opacity:0; animation:fadeIn 1s 1.1s forwards;
+  }
+  .big-stat {
+    background:rgba(255,255,255,.04); border:1px solid rgba(215,204,200,.12);
+    padding:2rem 2.5rem;
+    transition:background .25s;
+  }
+  .big-stat:hover { background:rgba(200,150,43,.08); border-color:rgba(200,150,43,.25); }
+  .big-stat-num {
+    font-family:'Playfair Display',serif; font-size:3.5rem; font-weight:900;
+    color:var(--gold); line-height:1; margin-bottom:.4rem;
+  }
+  .big-stat-desc { font-size:.88rem; color:var(--light); font-weight:300; line-height:1.5; }
+
+  /* ticker */
+  .ticker-wrap { height:42px; background:var(--gold); overflow:hidden; display:flex; align-items:center; position:relative; z-index:1; }
+  .ticker { display:flex; white-space:nowrap; animation:ticker 20s linear infinite; }
+  .ticker span { font-family:'DM Mono',monospace; font-size:.72rem; font-weight:500; color:var(--brown); letter-spacing:.08em; text-transform:uppercase; padding:0 2rem; }
+  .ticker span::before { content:'◆ '; }
+  @keyframes ticker { from{transform:translateX(0)} to{transform:translateX(-50%)} }
+
+  /* ── SECTIONS ── */
+  section { position:relative; }
+
+  .section-label {
+    font-family:'DM Mono',monospace; font-size:.72rem; color:var(--gold);
+    letter-spacing:.2em; text-transform:uppercase; margin-bottom:1rem;
+    display:flex; align-items:center; gap:1rem;
+  }
+  .section-label::before { content:''; width:28px; height:1px; background:var(--gold); }
+
+  .section-title {
+    font-family:'Playfair Display',serif; font-size:clamp(2rem,3.5vw,3rem);
+    font-weight:700; line-height:1.1; color:var(--brown); margin-bottom:1.5rem;
+  }
+
+  /* ── THE PROBLEM ── */
+  .problem {
+    display:grid; grid-template-columns:1fr 1fr;
+    background:var(--white);
+  }
+  .problem-text { padding:7rem 5rem 7rem 6rem; border-right:1px solid var(--light); }
+  .problem-body { font-size:1rem; line-height:1.85; color:var(--muted); font-weight:300; margin-bottom:1.5rem; }
+  .problem-body strong { color:var(--brown); font-weight:500; }
+
+  .problem-aside {
+    padding:7rem 5rem;
+    background:var(--cream);
+    display:flex; flex-direction:column; justify-content:center; gap:2rem;
+  }
+  .insight-card {
+    background:var(--white); border-left:3px solid var(--gold);
+    padding:1.5rem 1.8rem;
+    transition:transform .2s, box-shadow .2s;
+  }
+  .insight-card:hover { transform:translateX(4px); box-shadow:4px 0 20px rgba(200,150,43,.1); }
+  .insight-card-num { font-family:'Playfair Display',serif; font-size:2rem; font-weight:900; color:var(--gold); line-height:1; margin-bottom:.5rem; }
+  .insight-card-text { font-size:.88rem; color:var(--muted); line-height:1.6; }
+  .insight-card-text strong { color:var(--brown); }
+
+  /* ── FINDINGS ── */
+  .findings { padding:7rem 6rem; background:var(--brown); }
+  .findings .section-label { color:var(--gold); }
+  .findings .section-label::before { background:var(--gold); }
+  .findings .section-title { color:var(--cream); }
+
+  .findings-grid {
+    display:grid; grid-template-columns:repeat(3,1fr);
+    gap:1px; background:rgba(215,204,200,.1);
+    border:1px solid rgba(215,204,200,.1);
+    margin-top:3rem;
+  }
+  .finding-card {
+    background:rgba(255,255,255,.03); padding:2.5rem 2.2rem;
+    transition:background .25s;
+    position:relative; overflow:hidden;
+  }
+  .finding-card::after {
+    content:''; position:absolute; bottom:0; left:0; right:0; height:2px;
+    background:var(--gold); transform:scaleX(0); transform-origin:left;
+    transition:transform .3s ease;
+  }
+  .finding-card:hover { background:rgba(200,150,43,.07); }
+  .finding-card:hover::after { transform:scaleX(1); }
+
+  .finding-icon { font-size:1.8rem; margin-bottom:1.2rem; }
+  .finding-title { font-family:'DM Mono',monospace; font-size:.72rem; color:var(--gold); letter-spacing:.12em; text-transform:uppercase; margin-bottom:.8rem; }
+  .finding-text { font-size:.88rem; color:var(--light); line-height:1.7; font-weight:300; }
+  .finding-text strong { color:var(--gold); font-weight:500; }
+
+  /* ── DASHBOARDS ── */
+  .dashboards { padding:7rem 6rem; background:var(--cream); }
+
+  .dashboard-block {
+    display:grid; grid-template-columns:5fr 4fr;
+    gap:4rem; margin-bottom:5rem;
+    padding-bottom:5rem;
+    border-bottom:1px solid var(--light);
+    align-items:start;
+  }
+  .dashboard-block:last-child { border-bottom:none; margin-bottom:0; padding-bottom:0; }
+  .dashboard-block.reverse { direction:rtl; }
+  .dashboard-block.reverse > * { direction:ltr; }
+
+  .db-num {
+    font-family:'Playfair Display',serif; font-size:5rem; font-weight:900;
+    color:var(--light); line-height:1; margin-bottom:1rem;
+  }
+  .db-badge {
+    display:inline-flex; align-items:center; gap:.5rem;
+    background:var(--brown); color:var(--cream);
+    font-family:'DM Mono',monospace; font-size:.65rem;
+    letter-spacing:.1em; text-transform:uppercase;
+    padding:.4rem 1rem; margin-bottom:1.5rem;
+  }
+  .db-title { font-family:'Playfair Display',serif; font-size:1.6rem; font-weight:700; color:var(--brown); margin-bottom:1rem; line-height:1.2; }
+  .db-audience { font-family:'DM Mono',monospace; font-size:.7rem; color:var(--gold); letter-spacing:.1em; text-transform:uppercase; margin-bottom:1.5rem; }
+  .db-desc { font-size:.92rem; color:var(--muted); line-height:1.8; font-weight:300; margin-bottom:2rem; }
+
+  .visuals-list { display:flex; flex-direction:column; gap:.6rem; }
+  .visual-item {
+    display:flex; align-items:flex-start; gap:.8rem;
+    padding:.8rem 1rem; background:var(--white);
+    border-left:2px solid transparent;
+    transition:border-color .2s, background .2s;
+    font-size:.85rem; color:var(--muted); line-height:1.5;
+  }
+  .visual-item:hover { border-left-color:var(--gold); background:#FDF5E6; color:var(--brown); }
+  .visual-item::before { content:'→'; color:var(--gold); flex-shrink:0; font-size:.8rem; margin-top:.1rem; }
+
+  .db-aside {
+    background:var(--brown); padding:2.5rem;
+    display:flex; flex-direction:column; gap:1.5rem;
+  }
+  .db-aside-title { font-family:'DM Mono',monospace; font-size:.68rem; color:var(--gold); letter-spacing:.15em; text-transform:uppercase; padding-bottom:.8rem; border-bottom:1px solid rgba(215,204,200,.15); }
+  .db-screenshot-placeholder {
+    background:rgba(255,255,255,.05); border:1px dashed rgba(215,204,200,.2);
+    height:180px; display:flex; flex-direction:column;
+    align-items:center; justify-content:center; gap:.8rem;
+    color:rgba(215,204,200,.4); text-align:center;
+    font-family:'DM Mono',monospace; font-size:.7rem; letter-spacing:.08em;
+  }
+  .db-screenshot-placeholder span { font-size:2rem; }
+  .db-stat-row { display:flex; gap:1px; }
+  .db-mini-stat { flex:1; background:rgba(255,255,255,.04); padding:1rem; text-align:center; }
+  .db-mini-num { font-family:'Playfair Display',serif; font-size:1.6rem; font-weight:900; color:var(--gold); }
+  .db-mini-label { font-family:'DM Mono',monospace; font-size:.6rem; color:var(--light); letter-spacing:.08em; text-transform:uppercase; margin-top:.3rem; }
+
+  /* ── HEADLINE FINDING ── */
+  .headline { background:var(--gold); padding:6rem; text-align:center; }
+  .headline-quote {
+    font-family:'Playfair Display',serif; font-size:clamp(1.8rem,4vw,3.2rem);
+    font-weight:700; font-style:italic; color:var(--brown);
+    max-width:800px; margin:0 auto 2rem; line-height:1.3;
+  }
+  .headline-sub { font-family:'DM Mono',monospace; font-size:.8rem; color:var(--brown); opacity:.7; letter-spacing:.12em; text-transform:uppercase; }
+
+  /* ── RECOMMENDATIONS ── */
+  .recs { padding:7rem 6rem; background:var(--white); }
+  .recs-grid { display:grid; grid-template-columns:1fr 1fr; gap:2rem; margin-top:3rem; }
+  .rec-card {
+    padding:2.5rem; border:1px solid var(--light);
+    position:relative; overflow:hidden;
+    transition:border-color .25s, transform .25s;
+  }
+  .rec-card:hover { border-color:var(--gold); transform:translateY(-4px); }
+  .rec-num {
+    font-family:'Playfair Display',serif; font-size:4rem; font-weight:900;
+    color:var(--light); position:absolute; top:1rem; right:1.5rem; line-height:1;
+  }
+  .rec-icon { font-size:1.5rem; margin-bottom:1rem; }
+  .rec-title { font-family:'Playfair Display',serif; font-size:1.15rem; font-weight:700; color:var(--brown); margin-bottom:.8rem; line-height:1.3; }
+  .rec-text { font-size:.88rem; color:var(--muted); line-height:1.75; font-weight:300; }
+
+  /* ── PROJECT DETAILS ── */
+  .details { padding:7rem 6rem; background:var(--cream); }
+  .details-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:1px; background:var(--light); border:1px solid var(--light); margin-top:3rem; }
+  .detail-cell { background:var(--white); padding:2rem; }
+  .detail-cell:hover { background:#FDF5E6; }
+  .detail-key { font-family:'DM Mono',monospace; font-size:.65rem; color:var(--gold); letter-spacing:.15em; text-transform:uppercase; margin-bottom:.6rem; }
+  .detail-val { font-size:.92rem; color:var(--brown); font-weight:500; line-height:1.5; }
+
+  /* ── CTA ── */
+  .cta-section {
+    background:var(--brown); padding:6rem;
+    display:flex; flex-direction:column; align-items:center; text-align:center;
+    gap:2rem;
+  }
+  .cta-title { font-family:'Playfair Display',serif; font-size:clamp(2rem,4vw,3.5rem); font-weight:900; color:var(--cream); }
+  .cta-title span { color:var(--gold); }
+  .cta-sub { font-size:1rem; color:var(--light); max-width:480px; line-height:1.7; font-weight:300; }
+  .cta-buttons { display:flex; gap:1rem; flex-wrap:wrap; justify-content:center; }
+
+  .btn-gold { background:var(--gold); color:var(--brown); padding:.9rem 2.2rem; font-family:'DM Mono',monospace; font-size:.8rem; font-weight:500; letter-spacing:.06em; text-transform:uppercase; text-decoration:none; transition:transform .2s, box-shadow .2s; display:inline-flex; align-items:center; gap:.6rem; }
+  .btn-gold:hover { transform:translateY(-3px); box-shadow:0 8px 24px rgba(200,150,43,.4); }
+  .btn-ghost { background:transparent; color:var(--light); padding:.9rem 2.2rem; font-family:'DM Mono',monospace; font-size:.8rem; font-weight:500; letter-spacing:.06em; text-transform:uppercase; text-decoration:none; border:1px solid rgba(215,204,200,.3); transition:border-color .2s, color .2s, transform .2s; display:inline-flex; align-items:center; gap:.6rem; }
+  .btn-ghost:hover { border-color:var(--gold); color:var(--gold); transform:translateY(-3px); }
+
+  /* ── FOOTER ── */
+  footer { background:var(--text); padding:2rem 6rem; display:flex; justify-content:space-between; align-items:center; }
+  .footer-copy { font-family:'DM Mono',monospace; font-size:.72rem; color:rgba(245,240,232,.35); }
+  .footer-home { font-family:'DM Mono',monospace; font-size:.72rem; color:var(--gold); text-decoration:none; text-transform:uppercase; letter-spacing:.1em; transition:opacity .2s; }
+  .footer-home:hover { opacity:.7; }
+
+  /* ── ANIMATIONS ── */
+  @keyframes fadeUp { from{opacity:0;transform:translateY(24px)} to{opacity:1;transform:translateY(0)} }
+  @keyframes fadeIn { from{opacity:0} to{opacity:1} }
+  .reveal { opacity:0; transform:translateY(28px); transition:opacity .7s ease, transform .7s ease; }
+  .reveal.visible { opacity:1; transform:translateY(0); }
+
+  /* ── RESPONSIVE ── */
+  @media(max-width:900px){
+    nav { padding:1rem 2rem; }
+    .hero-content { grid-template-columns:1fr; padding:4rem 2rem 3rem; }
+    .hero-right { display:none; }
+    .problem, .dashboard-block { grid-template-columns:1fr; }
+    .dashboard-block.reverse { direction:ltr; }
+    .problem-text, .problem-aside { padding:4rem 2rem; }
+    .findings, .dashboards, .recs, .details, .cta-section { padding:5rem 2rem; }
+    .findings-grid, .recs-grid, .details-grid { grid-template-columns:1fr; }
+    .headline { padding:4rem 2rem; }
+    footer { padding:1.5rem 2rem; flex-direction:column; gap:.8rem; }
+  }
+</style>
+</head>
+<body>
+
+<div class="cursor" id="cursor"></div>
+<div class="cursor-ring" id="cursorRing"></div>
+
+<!-- ── NAV ── -->
+<nav>
+  <a href="index.html" class="nav-logo">Oluwatosin<span>.</span></a>
+  <a href="index.html#projects" class="nav-back">Back to Portfolio</a>
+</nav>
+
+<!-- ── HERO ── -->
+<section class="hero">
+  <div class="hero-rings">
+    <div class="ring"></div><div class="ring"></div>
+    <div class="ring"></div><div class="ring"></div><div class="ring"></div>
+  </div>
+
+  <div class="hero-content">
+    <div>
+      <p class="hero-tag">End-to-End Analytics Project</p>
+      <h1 class="hero-title">Grounds<br/>for<br/><em>Growth.</em></h1>
+      <p class="hero-subtitle">A four-year business intelligence investigation into why a coffee shop with strong sales was barely breaking even — and exactly what to do about it.</p>
+      <div class="hero-meta">
+        <div class="meta-item">
+          <p class="meta-label">Industry</p>
+          <p class="meta-value">☕ Retail / Consumer</p>
+        </div>
+        <div class="meta-item">
+          <p class="meta-label">Tools</p>
+          <p class="meta-value">Excel · Power Query</p>
+        </div>
+        <div class="meta-item">
+          <p class="meta-label">Period</p>
+          <p class="meta-value">2019 – 2022</p>
+        </div>
+        <div class="meta-item">
+          <p class="meta-label">Dashboards</p>
+          <p class="meta-value">2 Interactive</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="hero-right">
+      <div class="big-stat">
+        <div class="big-stat-num">3,551</div>
+        <div class="big-stat-desc">Orders analysed across 4 years of trading</div>
+      </div>
+      <div class="big-stat">
+        <div class="big-stat-num">913</div>
+        <div class="big-stat-desc">Customers across 3 countries — US, UK & Ireland</div>
+      </div>
+      <div class="big-stat">
+        <div class="big-stat-num">2.9%</div>
+        <div class="big-stat-desc">Profit margin uncovered — despite consistent sales growth</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="ticker-wrap">
+    <div class="ticker">
+      <span>Excel</span><span>Power Query</span><span>Pivot Tables</span>
+      <span>Dashboard Design</span><span>KPI Analysis</span><span>Data Cleaning</span>
+      <span>Business Intelligence</span><span>Profitability Analysis</span>
+      <span>Customer Behaviour</span><span>Data Storytelling</span>
+      <span>Excel</span><span>Power Query</span><span>Pivot Tables</span>
+      <span>Dashboard Design</span><span>KPI Analysis</span><span>Data Cleaning</span>
+      <span>Business Intelligence</span><span>Profitability Analysis</span>
+      <span>Customer Behaviour</span><span>Data Storytelling</span>
+    </div>
+  </div>
+</section>
+
+<!-- ── THE PROBLEM ── -->
+<section class="problem">
+  <div class="problem-text reveal">
+    <p class="section-label">The Problem</p>
+    <h2 class="section-title">Strong Sales.<br/>Thin Profits.</h2>
+    <p class="problem-body">A specialty coffee shop had four years of transaction data and no clear picture of what was actually working. Sales were growing. Customers were returning. But the profit margin told a different story — at just <strong>2.9% on ₦45,134 in total sales</strong>, the business was generating revenue without generating meaningful financial return.</p>
+    <p class="problem-body">Management had no analytical framework to understand why, or where to look first. This project was built to change that — from the ground up.</p>
+    <p class="problem-body">Working end-to-end across the full analytical pipeline — raw data, cleaning, modelling, dashboards, and recommendations — the analysis surfaced a structural pricing problem hiding inside what looked like a success story.</p>
+  </div>
+
+  <div class="problem-aside reveal">
+    <div class="insight-card">
+      <div class="insight-card-num">₦45K</div>
+      <div class="insight-card-text">Total sales generated over 4 years — yet only <strong>₦1,301 in profit</strong>. The gap between revenue and return was the central question this analysis set out to answer.</div>
+    </div>
+    <div class="insight-card">
+      <div class="insight-card-num">3 🌍</div>
+      <div class="insight-card-text">Countries served — <strong>United States, United Kingdom, and Ireland</strong> — with vastly different profit contributions revealing where the business was over and under-invested.</div>
+    </div>
+    <div class="insight-card">
+      <div class="insight-card-num">4 ☕</div>
+      <div class="insight-card-text">Coffee types analysed — <strong>Arabica, Robusta, Liberica, and Excelsa</strong> — each with dramatically different sales-to-profit ratios that the business had never formally examined.</div>
+    </div>
+  </div>
+</section>
+
+<!-- ── KEY FINDINGS ── -->
+<section class="findings">
+  <div class="reveal">
+    <p class="section-label">Key Findings</p>
+    <h2 class="section-title" style="color:var(--cream)">What the Data<br/>Was Hiding</h2>
+  </div>
+
+  <div class="findings-grid">
+    <div class="finding-card reveal">
+      <div class="finding-icon">⚠️</div>
+      <p class="finding-title">The Sales Paradox</p>
+      <p class="finding-text"><strong>Robusta was the best seller and the worst profit generator.</strong> It consistently led every year in sales volume but returned the lowest profit across all three roast types. The business was working its hardest for its least financially rewarding product.</p>
+    </div>
+    <div class="finding-card reveal">
+      <div class="finding-icon">💡</div>
+      <p class="finding-title">The Hidden Champion</p>
+      <p class="finding-text"><strong>Liberica Light Roast delivered the highest profit margin in the entire range</strong> — yet was never prominently marketed. It was sitting in the data quietly outperforming everything else on a per-unit basis, invisible without analysis.</p>
+    </div>
+    <div class="finding-card reveal">
+      <div class="finding-icon">📦</div>
+      <p class="finding-title">The Size Opportunity</p>
+      <p class="finding-text">All four cup sizes attract roughly equal order volumes. Yet <strong>the 2.5kg size contributes 30% of total profit.</strong> It is not underperforming — it is underexposed. The opportunity is steering existing demand, not creating new demand.</p>
+    </div>
+    <div class="finding-card reveal">
+      <div class="finding-icon">🗺️</div>
+      <p class="finding-title">Geographic Concentration</p>
+      <p class="finding-text">The <strong>United States accounts for 78% of total profit.</strong> The UK contributes only 7% — suggesting either low market penetration or poor product-market fit that warrants a focused review before further investment.</p>
+    </div>
+    <div class="finding-card reveal">
+      <div class="finding-icon">🎴</div>
+      <p class="finding-title">Loyalty Programme Gap</p>
+      <p class="finding-text"><strong>Non-loyalty card holders slightly outpurchase cardholders</strong> — inverting the fundamental logic of the programme. The system designed to increase purchase frequency is not delivering on its core purpose.</p>
+    </div>
+    <div class="finding-card reveal">
+      <div class="finding-icon">📅</div>
+      <p class="finding-title">Predictable Seasonality</p>
+      <p class="finding-text">Order volumes peak consistently in <strong>February–March (400+ cups)</strong> and fall significantly in August–October (~200 cups). This four-year-consistent pattern gives operations a reliable planning window that had never been formally identified.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ── DASHBOARDS ── -->
+<section class="dashboards">
+  <div class="reveal">
+    <p class="section-label">The Dashboards</p>
+    <h2 class="section-title">Two Dashboards.<br/>One Complete Picture.</h2>
+  </div>
+
+  <!-- Dashboard 1 -->
+  <div class="dashboard-block" style="margin-top:3rem;">
+    <div class="reveal">
+      <div class="db-num">01</div>
+      <span class="db-badge">Senior Management · Finance · Product</span>
+      <h3 class="db-title">Where Is the Money? A Coffee Profitability & Sales Analysis</h3>
+      <p class="db-audience">Sales & Profitability Intelligence Dashboard</p>
+      <p class="db-desc">Built to answer the business's most pressing commercial questions — which products are making money, which markets are worth investing in, and whether revenue growth is actually translating into profit.</p>
+      <div class="visuals-list">
+        <div class="visual-item">Profit per Country — US, UK & Ireland comparative analysis</div>
+        <div class="visual-item">Coffee Type & Roast Combination Profitability</div>
+        <div class="visual-item">Size Performance Breakdown: Volume, Revenue & Profit Share</div>
+        <div class="visual-item">Sales by Year — 4-year revenue trend</div>
+        <div class="visual-item">% Profit Change by Coffee Type (Year-over-Year)</div>
+      </div>
+    </div>
+    <div class="db-aside reveal">
+      <p class="db-aside-title">Dashboard Preview</p>
+      <div class="db-screenshot-placeholder">
+        <span>📊</span>
+        <p>ADD YOUR SCREENSHOT<br/>drag image here on GitHub</p>
+      </div>
+      <div class="db-stat-row">
+        <div class="db-mini-stat">
+          <div class="db-mini-num">5</div>
+          <div class="db-mini-label">Visuals</div>
+        </div>
+        <div class="db-mini-stat">
+          <div class="db-mini-num">3</div>
+          <div class="db-mini-label">Countries</div>
+        </div>
+        <div class="db-mini-stat">
+          <div class="db-mini-num">4</div>
+          <div class="db-mini-label">Coffee Types</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Dashboard 2 -->
+  <div class="dashboard-block reverse">
+    <div class="db-aside reveal">
+      <p class="db-aside-title">Dashboard Preview</p>
+      <div class="db-screenshot-placeholder">
+        <span>👥</span>
+        <p>ADD YOUR SCREENSHOT<br/>drag image here on GitHub</p>
+      </div>
+      <div class="db-stat-row">
+        <div class="db-mini-stat">
+          <div class="db-mini-num">6</div>
+          <div class="db-mini-label">Visuals</div>
+        </div>
+        <div class="db-mini-stat">
+          <div class="db-mini-num">913</div>
+          <div class="db-mini-label">Customers</div>
+        </div>
+        <div class="db-mini-stat">
+          <div class="db-mini-num">Top 9</div>
+          <div class="db-mini-label">Profiled</div>
+        </div>
+      </div>
+    </div>
+    <div class="reveal">
+      <div class="db-num">02</div>
+      <span class="db-badge">Marketing · Operations · Customer Success</span>
+      <h3 class="db-title">Who Is Buying, What They Want, and When They Come</h3>
+      <p class="db-audience">Customer Behaviour & Demand Intelligence Dashboard</p>
+      <p class="db-desc">Built to answer the human side of the business — who the customers are, what patterns drive their behaviour, and when and how demand moves across the year.</p>
+      <div class="visuals-list">
+        <div class="visual-item">Monthly Order Volume Trend — seasonal peaks & troughs</div>
+        <div class="visual-item">Coffee Size Preference Shifts by Year</div>
+        <div class="visual-item">Coffee Type Demand Trends by Year</div>
+        <div class="visual-item">Loyalty Card Holders vs. Non-Members Purchase Comparison</div>
+        <div class="visual-item">Top 9 Customers by Cumulative Spend</div>
+        <div class="visual-item">Customer Favourite Coffee & Roast Type</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── HEADLINE FINDING ── -->
+<section class="headline reveal">
+  <p class="headline-quote">"The business does not need more sales.<br/>It needs better sales."</p>
+  <p class="headline-sub">913 customers · 3,551 orders · 4 years of consistent demand · The market was there. The pricing strategy was not keeping up with it.</p>
+</section>
+
+<!-- ── RECOMMENDATIONS ── -->
+<section class="recs">
+  <div class="reveal">
+    <p class="section-label">Recommendations</p>
+    <h2 class="section-title">Three Actions.<br/>No New Customers Required.</h2>
+  </div>
+  <div class="recs-grid">
+    <div class="rec-card reveal">
+      <div class="rec-num">01</div>
+      <div class="rec-icon">💰</div>
+      <h3 class="rec-title">Reprice Robusta Immediately</h3>
+      <p class="rec-text">The product that powers the most sales is silently eroding profitability. A pricing review or cost structure investigation is the single highest-priority action the business can take. Robusta's dominance in volume makes this problem invisible on the surface — and catastrophic if left unaddressed.</p>
+    </div>
+    <div class="rec-card reveal">
+      <div class="rec-icon">⭐</div>
+      <div class="rec-num">02</div>
+      <h3 class="rec-title">Promote Liberica Light Roast Deliberately</h3>
+      <p class="rec-text">Feature it prominently on the menu, train staff to recommend it, and position it as a premium option. Redirecting even 15% of existing customer demand toward the highest-margin product would have a measurable impact on profit without requiring a single new customer to walk through the door.</p>
+    </div>
+    <div class="rec-card reveal">
+      <div class="rec-icon">🎯</div>
+      <div class="rec-num">03</div>
+      <h3 class="rec-title">Redesign the Loyalty Programme</h3>
+      <p class="rec-text">Tie loyalty points specifically to 2.5kg purchases and Liberica orders. This fixes two problems simultaneously — activating an underperforming programme and steering customer behaviour toward higher-margin products. A programme that rewards margin-positive behaviour serves the business as much as the customer.</p>
+    </div>
+    <div class="rec-card reveal">
+      <div class="rec-icon">📦</div>
+      <div class="rec-num">04</div>
+      <h3 class="rec-title">Market the 2.5kg Size as Best Value</h3>
+      <p class="rec-text">Display it prominently as the "Best Value" option. Offer a top-up deal — "Upgrade from 1 litre to 2.5 litre for just ₦X more." The 2.5kg generates 30% of total profit on equal order volume to other sizes. It is not underperforming. It is invisible to the customers who would choose it if prompted.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ── PROJECT DETAILS ── -->
+<section class="details">
+  <div class="reveal">
+    <p class="section-label">Project Details</p>
+    <h2 class="section-title">Technical Overview</h2>
+  </div>
+  <div class="details-grid reveal">
+    <div class="detail-cell">
+      <p class="detail-key">Tools Used</p>
+      <p class="detail-val">Microsoft Excel · Power Query</p>
+    </div>
+    <div class="detail-cell">
+      <p class="detail-key">Techniques</p>
+      <p class="detail-val">Data cleaning · Pivot tables · % difference analysis · Dashboard design · Data modelling</p>
+    </div>
+    <div class="detail-cell">
+      <p class="detail-key">Period Covered</p>
+      <p class="detail-val">January 2019 – August 2022</p>
+    </div>
+    <div class="detail-cell">
+      <p class="detail-key">Dataset Size</p>
+      <p class="detail-val">3,551 orders · 913 customers · 3 countries</p>
+    </div>
+    <div class="detail-cell">
+      <p class="detail-key">Dashboards Built</p>
+      <p class="detail-val">2 interactive Excel dashboards · 11 visuals total</p>
+    </div>
+    <div class="detail-cell">
+      <p class="detail-key">Key Limitation</p>
+      <p class="detail-val">2022 data terminates in August — year-end figures are not fully representative</p>
+    </div>
+    <div class="detail-cell">
+      <p class="detail-key">Analyst</p>
+      <p class="detail-val">Oluwatosin Olajumoke Ogunwale</p>
+    </div>
+    <div class="detail-cell">
+      <p class="detail-key">Project Type</p>
+      <p class="detail-val">Independent portfolio project — end-to-end</p>
+    </div>
+    <div class="detail-cell">
+      <p class="detail-key">Deliverables</p>
+      <p class="detail-val">2 dashboards · Written report · README · CV project entry · Cover letter</p>
+    </div>
+  </div>
+</section>
+
+<!-- ── CTA ── -->
+<section class="cta-section reveal">
+  <h2 class="cta-title">See the Full<br/><span>Analysis.</span></h2>
+  <p class="cta-sub">The complete project — raw data, cleaned dataset, dashboard files, full written report, and documented methodology — is available on GitHub.</p>
+  <div class="cta-buttons">
+    <a href="https://github.com/Oluwatosin-ogunwale/grounds-for-growth" target="_blank" class="btn-gold">View on GitHub ↗</a>
+    <a href="index.html#projects" class="btn-ghost">← Back to Portfolio</a>
+  </div>
+</section>
+
+<!-- ── FOOTER ── -->
+<footer>
+  <p class="footer-copy">© 2024 Oluwatosin Ogunwale · Data Analyst Portfolio</p>
+  <a href="index.html" class="footer-home">← Home</a>
+</footer>
+
+<script>
+  // Custom cursor
+  const cursor = document.getElementById('cursor');
+  const ring   = document.getElementById('cursorRing');
+  document.addEventListener('mousemove', e => {
+    cursor.style.left = e.clientX + 'px';
+    cursor.style.top  = e.clientY + 'px';
+    setTimeout(() => {
+      ring.style.left = e.clientX + 'px';
+      ring.style.top  = e.clientY + 'px';
+    }, 80);
+  });
+  document.querySelectorAll('a, button').forEach(el => {
+    el.addEventListener('mouseenter', () => { cursor.style.width='18px'; cursor.style.height='18px'; ring.style.width='50px'; ring.style.height='50px'; });
+    el.addEventListener('mouseleave', () => { cursor.style.width='10px'; cursor.style.height='10px'; ring.style.width='32px'; ring.style.height='32px'; });
+  });
+
+  // Scroll reveal
+  const observer = new IntersectionObserver(entries => {
+    entries.forEach((entry, i) => {
+      if (entry.isIntersecting) {
+        setTimeout(() => entry.target.classList.add('visible'), i * 80);
+        observer.unobserve(entry.target);
+      }
+    });
+  }, { threshold: 0.1 });
+  document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+</script>
+</body>
+</html>
