@@ -14,8 +14,8 @@
 - 📍 Based in **Lagos, Nigeria**
 - 💼 **Open to:** Full-time | Contract | Remote roles
 - 🎯 **Focus areas:** Business Intelligence · Data Cleaning · Visualization
-- 📚 **Currently learning:** [e.g., SQL Advanced Queries / Python Pandas]
-- 🏭 **Background:** Experience in [e.g., retail, finance, Tech] analytics
+- 📚 **Currently learning:**  Python Pandas
+- 🏭 **Background:** Experience in retail, finance, Tech analytics
 
 ---
 
