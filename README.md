@@ -34,12 +34,15 @@
 ## 📂 Featured Projects
 
 ### 🛒 End to End Coffee Shop Analytics - Profit, Demand and customer insights (https://github.com/Oluwatosin-Ogunwale/CoffeeShopProject)
-### Tradezone E-Commerce Performance Analysis
-(https://github.com/oluwatosin-ogunwale/tradezone-analysis)
+
 > **Tools:** Excel · Pivot Tables · Dashboard · Data Cleaning
 > Analyzed 4 years of retail sales data across regions and product categories.
 > 📌 **Result:** Identified pricing problem best seller by volume was not the best seller by sale; recommended targeted price review and loyalty program redesign.
 
+### Tradezone E-Commerce Performance Analysis (https://github.com/oluwatosin-ogunwale/tradezone-analysis)
+> **Tool:** SQL (postgresql)
+> The analysis was conducted to surface growth risks, operational inefficiencies, and data quality issues ahead of the 2025 planning cycle.
+> 📌 **Result:** Identified a conversion gap. More than half of all newly acquired customers in 2024 did not make a first purchase within 30 days; recommended unlocking up to 10.5 million through better onboarding.
 
 ---
 
