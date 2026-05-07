@@ -1,0 +1,651 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>TradeZone Analysis — Oluwatosin Ogunwale</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=DM+Mono:wght@300;400;500&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
+<style>
+  *, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+  :root {
+    --cream:  #F5F0E8; --brown:  #3E2723; --mid:    #6D4C41;
+    --gold:   #C8962B; --light:  #D7CCC8; --text:   #1A1208;
+    --muted:  #8D7355; --white:  #FFFDF9; --accent: #A0522D;
+  }
+  html { scroll-behavior:smooth; }
+  body { font-family:'DM Sans',sans-serif; background:var(--cream);
+    color:var(--text); overflow-x:hidden; cursor:none; }
+  .cursor { position:fixed; width:12px; height:12px; background:var(--gold);
+    border-radius:50%; pointer-events:none; z-index:9999;
+    transform:translate(-50%,-50%); transition:width .2s,height .2s;
+    mix-blend-mode:multiply; }
+  .cursor-ring { position:fixed; width:36px; height:36px;
+    border:1.5px solid var(--brown); border-radius:50%;
+    pointer-events:none; z-index:9998; transform:translate(-50%,-50%);
+    transition:transform .35s cubic-bezier(.23,1,.32,1),width .3s,height .3s; opacity:.5; }
+  body::before { content:''; position:fixed; inset:0;
+    background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+    pointer-events:none; z-index:0; opacity:.4; }
+
+  /* NAV */
+  nav { position:fixed; top:0; left:0; right:0; z-index:100;
+    display:flex; align-items:center; justify-content:space-between;
+    padding:1.2rem 4rem; background:rgba(245,240,232,0.88);
+    backdrop-filter:blur(12px); border-bottom:1px solid rgba(62,39,35,0.12);
+    transition:box-shadow .3s; }
+  nav.scrolled { box-shadow:0 2px 24px rgba(62,39,35,0.10); }
+  .nav-logo { font-family:'Playfair Display',serif; font-size:1.3rem;
+    font-weight:700; color:var(--brown); text-decoration:none; }
+  .nav-links { display:flex; gap:2.5rem; list-style:none; }
+  .nav-links a { font-family:'DM Mono',monospace; font-size:.78rem;
+    color:var(--muted); text-decoration:none; letter-spacing:.08em;
+    text-transform:uppercase; transition:color .2s; position:relative; }
+  .nav-links a::after { content:''; position:absolute; bottom:-3px; left:0;
+    width:0; height:1px; background:var(--gold); transition:width .25s; }
+  .nav-links a:hover { color:var(--brown); }
+  .nav-links a:hover::after { width:100%; }
+
+  /* HERO */
+  .hero { min-height:100vh; display:grid; grid-template-columns:1fr 1fr;
+    position:relative; overflow:hidden; }
+  .hero-left { background:var(--brown); display:flex; flex-direction:column;
+    justify-content:center; padding:8rem 5rem 6rem 6rem;
+    position:relative; z-index:1; }
+  .hero-left::after { content:''; position:absolute; top:0; right:-60px;
+    width:120px; height:100%; background:var(--brown);
+    clip-path:polygon(0 0,50% 0,100% 50%,50% 100%,0 100%); z-index:2; }
+  .hero-tag { font-family:'DM Mono',monospace; font-size:.72rem; color:var(--gold);
+    letter-spacing:.18em; text-transform:uppercase; margin-bottom:1.5rem;
+    opacity:0; animation:fadeUp .6s .3s forwards; }
+  .hero-name { font-family:'Playfair Display',serif;
+    font-size:clamp(2.8rem,5vw,5rem); font-weight:900; line-height:.95;
+    color:var(--cream); margin-bottom:1.5rem;
+    opacity:0; animation:fadeUp .7s .5s forwards; }
+  .hero-name span { color:var(--gold); display:block; }
+  .hero-sub { font-size:1rem; color:var(--light); line-height:1.65;
+    max-width:380px; font-weight:300; margin-bottom:3rem;
+    opacity:0; animation:fadeUp .7s .7s forwards; }
+  .hero-sub strong { color:var(--gold); }
+  .hero-ctas { display:flex; gap:1rem; flex-wrap:wrap;
+    opacity:0; animation:fadeUp .7s .9s forwards; }
+  .btn-primary { background:var(--gold); color:var(--brown); padding:.9rem 2.2rem;
+    font-family:'DM Mono',monospace; font-size:.8rem; font-weight:500;
+    letter-spacing:.06em; text-transform:uppercase; text-decoration:none;
+    border:none; cursor:pointer; transition:transform .2s,box-shadow .2s;
+    display:inline-flex; align-items:center; gap:.6rem; }
+  .btn-primary:hover { transform:translateY(-3px);
+    box-shadow:0 8px 24px rgba(200,150,43,.35); }
+  .btn-outline { background:transparent; color:var(--light); padding:.9rem 2.2rem;
+    font-family:'DM Mono',monospace; font-size:.8rem; letter-spacing:.06em;
+    text-transform:uppercase; text-decoration:none;
+    border:1px solid rgba(213,196,181,.4);
+    transition:border-color .2s,color .2s,transform .2s;
+    display:inline-flex; align-items:center; gap:.6rem; }
+  .btn-outline:hover { border-color:var(--gold); color:var(--gold);
+    transform:translateY(-3px); }
+  .hero-right { background:var(--cream); display:flex; flex-direction:column;
+    justify-content:center; align-items:flex-end; padding:8rem 5rem 6rem 8rem;
+    opacity:0; animation:fadeIn 1s 1s forwards; }
+  .stats-grid { display:grid; grid-template-columns:1fr 1fr; gap:1px;
+    background:var(--light); border:1px solid var(--light);
+    width:100%; max-width:420px; }
+  .stat-box { background:var(--white); padding:2rem 1.8rem; transition:background .2s; }
+  .stat-box:hover { background:#F9F4EA; }
+  .stat-num { font-family:'Playfair Display',serif; font-size:2.4rem;
+    font-weight:900; color:var(--brown); line-height:1; margin-bottom:.4rem; }
+  .stat-num sup { font-size:1rem; vertical-align:super; }
+  .stat-label { font-family:'DM Mono',monospace; font-size:.68rem; color:var(--muted);
+    letter-spacing:.1em; text-transform:uppercase; line-height:1.5; }
+  .ticker-wrap { position:absolute; bottom:0; left:0; right:0; height:44px;
+    background:var(--gold); overflow:hidden; display:flex; align-items:center; }
+  .ticker { display:flex; animation:ticker 26s linear infinite; }
+  .ticker span { font-family:'DM Mono',monospace; font-size:.75rem; font-weight:500;
+    color:var(--brown); letter-spacing:.08em; text-transform:uppercase;
+    padding:0 2.5rem; white-space:nowrap; }
+  .ticker span::before { content:'◆ '; }
+
+  /* SHARED */
+  .section-label { font-family:'DM Mono',monospace; font-size:.72rem; color:var(--gold);
+    letter-spacing:.2em; text-transform:uppercase; margin-bottom:1.2rem;
+    display:flex; align-items:center; gap:1rem; }
+  .section-label::before { content:''; width:32px; height:1px; background:var(--gold); }
+  .section-title { font-family:'Playfair Display',serif;
+    font-size:clamp(2rem,3.5vw,3.2rem); font-weight:700; line-height:1.1;
+    color:var(--brown); margin-bottom:2rem; }
+
+  /* ABOUT / CONTEXT */
+  .context { display:grid; grid-template-columns:5fr 4fr;
+    border-top:1px solid var(--light); }
+  .context-left { padding:7rem 6rem; border-right:1px solid var(--light); }
+  .context-body { font-size:1rem; line-height:1.82; color:var(--muted);
+    font-weight:300; max-width:520px; margin-bottom:1.5rem; }
+  .context-body strong { color:var(--brown); font-weight:500; }
+  .meta-grid { display:grid; grid-template-columns:1fr 1fr; gap:1px;
+    background:var(--light); border:1px solid var(--light); margin-top:3rem; }
+  .meta-item { background:var(--white); padding:1.2rem 1.5rem; }
+  .meta-key { font-family:'DM Mono',monospace; font-size:.65rem; color:var(--muted);
+    letter-spacing:.12em; text-transform:uppercase; margin-bottom:.3rem; }
+  .meta-val { font-size:.9rem; color:var(--brown); font-weight:500; }
+  .context-right { background:var(--brown); padding:7rem 5rem;
+    display:flex; flex-direction:column; justify-content:center; }
+  .memo-card { border-left:3px solid var(--gold); padding:1.5rem 2rem;
+    margin-bottom:1.5rem; background:rgba(255,255,255,.04); transition:background .2s; }
+  .memo-card:hover { background:rgba(255,255,255,.07); }
+  .memo-card:last-child { margin-bottom:0; }
+  .memo-tag { font-family:'DM Mono',monospace; font-size:.65rem; color:var(--gold);
+    letter-spacing:.15em; text-transform:uppercase; margin-bottom:.6rem; }
+  .memo-text { font-size:.9rem; color:var(--light); line-height:1.65; }
+  .memo-text strong { color:var(--cream); font-weight:500; }
+
+  /* FINDINGS */
+  .findings { padding:7rem 6rem; background:var(--white);
+    border-top:1px solid var(--light); }
+  .findings-grid { display:grid; grid-template-columns:repeat(3,1fr);
+    gap:1px; background:var(--light); border:1px solid var(--light); margin-top:3rem; }
+  .finding-card { background:var(--white); padding:3rem 2.5rem;
+    position:relative; overflow:hidden; transition:background .2s; }
+  .finding-card::before { content:''; position:absolute; bottom:0; left:0;
+    right:0; height:3px; background:var(--gold); transform:scaleX(0);
+    transform-origin:left; transition:transform .3s; }
+  .finding-card:hover { background:#FFFBF3; }
+  .finding-card:hover::before { transform:scaleX(1); }
+  .f-num { font-family:'Playfair Display',serif; font-size:4rem; font-weight:900;
+    color:var(--light); line-height:1; margin-bottom:1.5rem; transition:color .25s; }
+  .finding-card:hover .f-num { color:rgba(200,150,43,.3); }
+  .f-tag { font-family:'DM Mono',monospace; font-size:.68rem; color:var(--gold);
+    letter-spacing:.15em; text-transform:uppercase; margin-bottom:.8rem; }
+  .f-title { font-family:'Playfair Display',serif; font-size:1.25rem;
+    font-weight:700; color:var(--brown); line-height:1.25; margin-bottom:1rem; }
+  .f-body { font-size:.88rem; line-height:1.75; color:var(--muted); margin-bottom:1.8rem; }
+  .f-body strong { color:var(--brown); font-weight:500; }
+  .f-stat { display:flex; align-items:baseline; gap:.6rem;
+    padding-top:1.5rem; border-top:1px solid var(--light); }
+  .f-stat-num { font-family:'Playfair Display',serif; font-size:2.2rem;
+    font-weight:900; color:var(--brown); }
+  .f-stat-label { font-family:'DM Mono',monospace; font-size:.68rem;
+    color:var(--muted); letter-spacing:.06em; text-transform:uppercase; line-height:1.5; }
+
+  /* CONVERSION TABLE */
+  .conv-section { display:grid; grid-template-columns:5fr 4fr;
+    border-top:1px solid var(--light); }
+  .conv-left { padding:7rem 6rem; border-right:1px solid var(--light); }
+  .conv-table { width:100%; border-collapse:collapse;
+    border:1px solid var(--light); margin-top:2rem; }
+  .conv-table th { background:var(--brown); padding:1rem 1.2rem;
+    font-family:'DM Mono',monospace; font-size:.68rem; color:var(--cream);
+    letter-spacing:.1em; text-transform:uppercase; text-align:left; }
+  .conv-table td { padding:.9rem 1.2rem; font-size:.88rem; color:var(--muted);
+    border-bottom:1px solid var(--light); background:var(--white); }
+  .conv-table tr:last-child td { border-bottom:none; }
+  .conv-table td:first-child { color:var(--brown); font-weight:500; }
+  .conv-table td.hi { font-family:'DM Mono',monospace; color:var(--mid); font-weight:500; }
+  .conv-table td.lo { font-family:'DM Mono',monospace; color:var(--accent); font-weight:500; }
+  .conv-table td.md { font-family:'DM Mono',monospace; color:var(--muted); font-weight:500; }
+  .conv-table tr.tot td { background:var(--cream); font-weight:700;
+    color:var(--brown); font-family:'DM Mono',monospace; font-size:.8rem; }
+  .conv-right { background:var(--brown); padding:7rem 5rem;
+    display:flex; flex-direction:column; justify-content:center; }
+  .conv-right .section-label { color:var(--gold); }
+  .conv-right .section-label::before { background:var(--gold); }
+  .conv-title { font-family:'Playfair Display',serif; font-size:2.5rem;
+    font-weight:700; color:var(--cream); line-height:1.1; margin-bottom:2rem; }
+  .impact-box { border:1px solid rgba(213,196,181,.2); padding:2rem;
+    background:rgba(255,255,255,.04); }
+  .impact-box p { font-size:.92rem; color:var(--light); line-height:1.75;
+    margin-bottom:1.2rem; }
+  .impact-box p strong { color:var(--cream); font-weight:500; }
+  .impact-num { font-family:'Playfair Display',serif; font-size:3rem;
+    font-weight:900; color:var(--gold); line-height:1; margin-bottom:.4rem;
+    margin-top:1.5rem; padding-top:1.5rem; border-top:1px solid rgba(213,196,181,.2); }
+  .impact-desc { font-family:'DM Mono',monospace; font-size:.68rem; color:var(--muted);
+    letter-spacing:.1em; text-transform:uppercase; }
+
+  /* DATA QUALITY */
+  .quality { padding:7rem 6rem; background:var(--cream);
+    border-top:1px solid var(--light); }
+  .quality-grid { display:grid; grid-template-columns:1fr 1fr;
+    gap:1px; background:var(--light); border:1px solid var(--light); margin-top:3rem; }
+  .quality-card { background:var(--white); padding:3rem 2.5rem;
+    border-left:3px solid var(--gold); transition:background .2s; }
+  .quality-card:hover { background:#FFFBF3; }
+  .q-issue { font-family:'DM Mono',monospace; font-size:.68rem; color:var(--gold);
+    letter-spacing:.15em; text-transform:uppercase; margin-bottom:.8rem; }
+  .q-title { font-family:'Playfair Display',serif; font-size:1.2rem;
+    font-weight:700; color:var(--brown); line-height:1.3; margin-bottom:1rem; }
+  .q-body { font-size:.88rem; color:var(--muted); line-height:1.72; margin-bottom:1.5rem; }
+  .q-body strong { color:var(--brown); font-weight:500; }
+  .q-decision { padding:1rem 1.2rem; background:var(--cream);
+    border:1px solid var(--light); margin-bottom:.8rem; }
+  .q-decision-label { font-family:'DM Mono',monospace; font-size:.65rem;
+    color:var(--gold); letter-spacing:.1em; text-transform:uppercase; margin-bottom:.4rem; }
+  .q-decision-body { font-size:.84rem; color:var(--muted); }
+  .q-risk { padding:1rem 1.2rem; background:#FFF5F0;
+    border:1px solid rgba(160,82,45,.2); }
+  .q-risk-label { font-family:'DM Mono',monospace; font-size:.65rem;
+    color:var(--accent); letter-spacing:.1em; text-transform:uppercase; margin-bottom:.4rem; }
+  .q-risk-body { font-size:.84rem; color:var(--muted); }
+
+  /* RECS */
+  .recs { border-top:1px solid var(--light); display:grid; grid-template-columns:1fr 1fr; }
+  .rec-card { padding:7rem 5.5rem; border-right:1px solid var(--light);
+    position:relative; overflow:hidden; transition:background .2s; }
+  .rec-card:last-child { border-right:none; }
+  .rec-card:hover { background:var(--white); }
+  .rec-card::after { content:''; position:absolute; bottom:0; left:0; right:0;
+    height:3px; background:var(--gold); transform:scaleX(0);
+    transform-origin:left; transition:transform .35s; }
+  .rec-card:hover::after { transform:scaleX(1); }
+  .rec-num { font-family:'DM Mono',monospace; font-size:.68rem; color:var(--muted);
+    letter-spacing:.15em; margin-bottom:.8rem; }
+  .rec-owner { display:inline-block; background:rgba(200,150,43,.12);
+    border:1px solid rgba(200,150,43,.3); padding:.3rem .9rem; margin-bottom:1.5rem; }
+  .rec-owner span { font-family:'DM Mono',monospace; font-size:.67rem;
+    color:var(--gold); letter-spacing:.1em; text-transform:uppercase; }
+  .rec-title { font-family:'Playfair Display',serif; font-size:1.5rem;
+    font-weight:700; color:var(--brown); line-height:1.2; margin-bottom:1.2rem; }
+  .rec-body { font-size:.92rem; color:var(--muted); line-height:1.78; margin-bottom:2rem; }
+  .rec-body strong { color:var(--brown); font-weight:500; }
+  .rec-outcome { padding:1.5rem; background:var(--cream); border:1px solid var(--light); }
+  .rec-outcome-label { font-family:'DM Mono',monospace; font-size:.65rem;
+    color:var(--gold); letter-spacing:.1em; text-transform:uppercase; margin-bottom:.5rem; }
+  .rec-outcome-body { font-size:.85rem; color:var(--muted); line-height:1.6; }
+  .rec-outcome-body strong { color:var(--brown); font-weight:600; }
+
+  /* UNKNOWN */
+  .unknown { background:var(--brown); padding:7rem 6rem;
+    border-top:1px solid var(--light);
+    display:grid; grid-template-columns:1fr 2fr; gap:6rem; align-items:center; }
+  .unknown .section-label { color:var(--gold); }
+  .unknown .section-label::before { background:var(--gold); }
+  .unknown-title { font-family:'Playfair Display',serif;
+    font-size:clamp(2rem,3vw,3rem); font-weight:700;
+    color:var(--cream); line-height:1.1; }
+  .unknown-title span { color:var(--gold); }
+  .unknown-body { font-size:.98rem; color:var(--light); line-height:1.8;
+    margin-bottom:1.5rem; font-weight:300; }
+  .unknown-body strong { color:var(--cream); font-weight:500; }
+  .unknown-req { padding:1.8rem 2rem; border:1px solid rgba(213,196,181,.2);
+    border-left:3px solid var(--gold); background:rgba(255,255,255,.04); }
+  .unknown-req-label { font-family:'DM Mono',monospace; font-size:.68rem;
+    color:var(--gold); letter-spacing:.12em; text-transform:uppercase; margin-bottom:.6rem; }
+  .unknown-req-body { font-size:.9rem; color:var(--light); line-height:1.7; }
+  .unknown-req-body strong { color:var(--cream); }
+
+  /* CONCLUSION */
+  .conclusion { padding:7rem 6rem; background:var(--white);
+    border-top:1px solid var(--light);
+    display:grid; grid-template-columns:1fr 1fr; gap:6rem; align-items:start; }
+  .conc-body { font-size:.98rem; color:var(--muted); line-height:1.82; margin-bottom:1.5rem; }
+  .conc-body strong { color:var(--brown); font-weight:500; }
+  .quote-block { background:var(--brown); padding:2.5rem; margin-top:2rem; }
+  .quote-text { font-family:'Playfair Display',serif; font-size:1.15rem;
+    font-style:italic; color:var(--cream); line-height:1.6; margin-bottom:1rem; }
+  .quote-author { font-family:'DM Mono',monospace; font-size:.7rem;
+    color:var(--gold); letter-spacing:.12em; text-transform:uppercase; }
+  .conc-stats { display:flex; flex-direction:column; gap:1px;
+    background:var(--light); border:1px solid var(--light); }
+  .conc-row { background:var(--white); padding:1.8rem 2rem;
+    display:flex; align-items:center; gap:1.5rem; transition:background .2s; }
+  .conc-row:hover { background:#FFFBF3; }
+  .conc-icon { font-size:1.4rem; flex-shrink:0; }
+  .conc-heading { font-family:'Playfair Display',serif; font-weight:700;
+    font-size:1rem; color:var(--brown); margin-bottom:.2rem; }
+  .conc-detail { font-size:.82rem; color:var(--muted); line-height:1.5; }
+
+  /* FOOTER */
+  footer { background:var(--text); padding:2rem 6rem;
+    display:flex; justify-content:space-between; align-items:center; }
+  .footer-copy { font-family:'DM Mono',monospace; font-size:.72rem;
+    color:rgba(245,240,232,.4); letter-spacing:.08em; }
+  .footer-links { display:flex; gap:2rem; }
+  .footer-links a { font-family:'DM Mono',monospace; font-size:.72rem;
+    color:rgba(245,240,232,.4); text-decoration:none; letter-spacing:.1em;
+    text-transform:uppercase; transition:color .2s; }
+  .footer-links a:hover { color:var(--gold); }
+
+  /* ANIMATIONS */
+  @keyframes fadeUp { from{opacity:0;transform:translateY(24px)} to{opacity:1;transform:translateY(0)} }
+  @keyframes fadeIn { from{opacity:0} to{opacity:1} }
+  @keyframes ticker { from{transform:translateX(0)} to{transform:translateX(-50%)} }
+  .reveal { opacity:0; transform:translateY(28px);
+    transition:opacity .7s ease,transform .7s ease; }
+  .reveal.visible { opacity:1; transform:translateY(0); }
+
+  /* RESPONSIVE */
+  @media(max-width:900px){
+    nav{padding:1rem 1.5rem;} .nav-links{display:none;}
+    .hero{grid-template-columns:1fr;}
+    .hero-left{padding:8rem 2rem 4rem;} .hero-left::after{display:none;}
+    .hero-right{display:none;}
+    .context,.conv-section,.unknown,.conclusion{grid-template-columns:1fr;}
+    .context-left,.conv-left{padding:5rem 2rem; border-right:none;}
+    .context-right,.conv-right,.unknown{padding:4rem 2rem;}
+    .findings,.quality{padding:5rem 2rem;}
+    .findings-grid,.quality-grid{grid-template-columns:1fr;}
+    .recs{grid-template-columns:1fr;}
+    .rec-card{padding:5rem 2rem; border-right:none; border-bottom:1px solid var(--light);}
+    .conclusion{padding:5rem 2rem;}
+    footer{padding:1.5rem 2rem; flex-direction:column; gap:1rem;}
+  }
+</style>
+</head>
+<body>
+
+<div class="cursor" id="cursor"></div>
+<div class="cursor-ring" id="cursorRing"></div>
+
+<!-- NAV -->
+<nav id="navbar">
+  <a href="https://oluwatosin-ogunwale.github.io" class="nav-logo">Oluwatosin<span style="color:var(--gold)">.</span></a>
+  <ul class="nav-links">
+    <li><a href="#findings">Findings</a></li>
+    <li><a href="#quality">Data Quality</a></li>
+    <li><a href="#recs">Recommendations</a></li>
+    <li><a href="#conclusion">Conclusion</a></li>
+    <li><a href="https://github.com/Oluwatosin-ogunwale/tradezone-analysis" target="_blank">GitHub ↗</a></li>
+  </ul>
+</nav>
+
+<!-- HERO -->
+<section class="hero" id="home">
+  <div class="hero-left">
+    <p class="hero-tag">E-Commerce · Operations · Growth Analytics · Project 02</p>
+    <h1 class="hero-name">TradeZone<br/><span>Performance.</span></h1>
+    <p class="hero-sub">
+      An independent analyst memo covering <strong>₦984.7 million in revenue</strong>
+      across a multi-city Nigerian e-commerce platform  surfacing growth risks,
+      conversion gaps, and seller quality imbalances ahead of the 2025 planning cycle.
+    </p>
+    <div class="hero-ctas">
+      <a href="#findings" class="btn-primary">View Findings →</a>
+      <a href="https://github.com/Oluwatosin-ogunwale/tradezone-analysis" target="_blank" class="btn-outline">GitHub Repo ↗</a>
+    </div>
+  </div>
+
+  <div class="hero-right">
+    <div class="stats-grid">
+      <div class="stat-box">
+        <div class="stat-num">₦984M</div>
+        <div class="stat-label">Total Revenue<br/>2023 – 2024</div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-num">1,544<sup>%</sup></div>
+        <div class="stat-label">YoY Growth<br/>Q1 23 → Q1 24</div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-num">41.65<sup>%</sup></div>
+        <div class="stat-label">Avg 30-Day<br/>Conversion Rate</div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-num">₦10.5M</div>
+        <div class="stat-label">Recoverable<br/>Revenue</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="ticker-wrap">
+    <div class="ticker">
+      <span>SQL</span><span>Data Quality</span><span>Conversion Analysis</span>
+      <span>Seller Performance</span><span>Revenue Intelligence</span>
+      <span>Growth Risk</span><span>Analyst Memo</span><span>Nigeria</span>
+      <span>SQL</span><span>Data Quality</span><span>Conversion Analysis</span>
+      <span>Seller Performance</span><span>Revenue Intelligence</span>
+      <span>Growth Risk</span><span>Analyst Memo</span><span>Nigeria</span>
+    </div>
+  </div>
+</section>
+
+<!-- CONTEXT -->
+<section class="context reveal">
+  <div class="context-left">
+    <p class="section-label">Project Context</p>
+    <h2 class="section-title">The Analyst Memo</h2>
+    <p class="context-body">TradeZone recorded impressive headline growth from 2023 to 2024. But beneath the numbers, the data revealed <strong>three structural concerns</strong> requiring urgent attention before the 2025 planning cycle a conversion gap, a fragile single-engine growth model, and a seller quality imbalance.</p>
+    <p class="context-body">This memo was addressed to the <strong>Head of Growth</strong> and <strong>Head of Seller Operations</strong> — the two teams best positioned to act on the findings immediately.</p>
+    <div class="meta-grid">
+      <div class="meta-item"><p class="meta-key">Period</p><p class="meta-val">2023 – 2024</p></div>
+      <div class="meta-item"><p class="meta-key">Tools</p><p class="meta-val">SQL </p></div>
+      <div class="meta-item"><p class="meta-key">Cities</p><p class="meta-val">Lagos · FCT · Rivers · Oyo · Kano</p></div>
+      <div class="meta-item"><p class="meta-key">Date</p><p class="meta-val">April 23, 2026</p></div>
+      <div class="meta-item"><p class="meta-key">Products</p><p class="meta-val">280 Active</p></div>
+      <div class="meta-item"><p class="meta-key">Sellers</p><p class="meta-val">90 Active</p></div>
+    </div>
+  </div>
+  <div class="context-right">
+    <p class="section-label" style="color:var(--gold);">Summary of Findings</p>
+    <div class="memo-card">
+      <p class="memo-tag">Finding 01 → Head of Growth</p>
+      <p class="memo-text"><strong>Conversion gap:</strong> 51–69% of newly acquired customers in 2024 did not make a first purchase within 30 days. The platform is paying to acquire customers it is then failing to activate.</p>
+    </div>
+    <div class="memo-card">
+      <p class="memo-tag">Finding 02 → Head of Growth</p>
+      <p class="memo-text"><strong>Growth engine risk:</strong> Q1 2024 delivered 1,544% YoY revenue growth; but every naira came from more orders, not better orders. No repeat purchase behaviour or upselling is visible in the data.</p>
+    </div>
+    <div class="memo-card">
+      <p class="memo-tag">Finding 03 → Head of Seller Operations</p>
+      <p class="memo-text"><strong>Seller imbalance:</strong> Only 3 of the top 10 revenue sellers appear on the top 10 speed list. Fast sellers carry ratings as low as 1.85. Speed without quality is commercially worthless on this platform.</p>
+    </div>
+  </div>
+</section>
+
+<!-- FINDINGS -->
+<section class="findings" id="findings">
+  <p class="section-label reveal">Key Findings</p>
+  <h2 class="section-title reveal">Three Problems.<br/>All Fixable.</h2>
+  <div class="findings-grid">
+    <div class="finding-card reveal">
+      <div class="f-num">01</div>
+      <p class="f-tag">📉 Conversion & Onboarding</p>
+      <h3 class="f-title">Customers Lost at the Door</h3>
+      <p class="f-body">TradeZone acquired <strong>425 new customers in 2024</strong> but only 177 made a purchase within 30 days, a platform average of 41.65%. Kano performed worst at 31%, Lagos best at 49%. The majority of acquired customers are signing up and going quiet likely due to onboarding friction, poor product discovery, or insufficient trust signals on first visit.</p>
+      <div class="f-stat">
+        <span class="f-stat-num">58.35%</span>
+        <span class="f-stat-label">of new customers<br/>not activating within 30 days</span>
+      </div>
+    </div>
+    <div class="finding-card reveal">
+      <div class="f-num">02</div>
+      <p class="f-tag">⚠️ Revenue Sustainability</p>
+      <h3 class="f-title">1,544% Growth. One Engine.</h3>
+      <p class="f-body">Orders jumped from <strong>22 in Q1 2023 to 342 in Q1 2024.</strong> But average order value stayed flat between ₦250,000–₦360,000. No upselling, no increasing spend, no repeat purchases visible in the data. Every naira of growth came from acquiring more customers meaning if acquisition slows, revenue falls at exactly the same rate with nothing to cushion the impact.</p>
+      <div class="f-stat">
+        <span class="f-stat-num">1,544<sup style="font-size:1.1rem">%</sup></span>
+        <span class="f-stat-label">YoY growth<br/>entirely volume-driven</span>
+      </div>
+    </div>
+    <div class="finding-card reveal">
+      <div class="f-num">03</div>
+      <p class="f-tag">🏪 Seller Operations</p>
+      <h3 class="f-title">Speed ≠ Revenue</h3>
+      <p class="f-body">Only <strong>3 sellers appear in both</strong> the top 10 revenue and top 10 fastest fulfilment lists. Revenue leaders hold ratings of 4.0+. Fast sellers carry ratings as low as <strong>1.85 (GadgetKing NG)</strong> and 2.50 (AgriMart NG). Customers tolerate slower delivery from quality sellers and refuse to reward fast-but-poor sellers with repeat purchases or higher spend.</p>
+      <div class="f-stat">
+        <span class="f-stat-num">3/10</span>
+        <span class="f-stat-label">sellers in both<br/>revenue & speed top 10</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CONVERSION TABLE -->
+<section class="conv-section">
+  <div class="conv-left reveal">
+    <p class="section-label">Conversion Data</p>
+    <h2 class="section-title">First-30-Day<br/>Conversion by State</h2>
+    <table class="conv-table">
+      <thead><tr><th>State</th><th>New Customers</th><th>Converted (30d)</th><th>Rate</th></tr></thead>
+      <tbody>
+        <tr><td>Lagos</td><td>146</td><td>72</td><td class="hi">49.32%</td></tr>
+        <tr><td>Rivers</td><td>66</td><td>28</td><td class="md">42.42%</td></tr>
+        <tr><td>FCT</td><td>92</td><td>38</td><td class="md">41.30%</td></tr>
+        <tr><td>Oyo</td><td>63</td><td>21</td><td class="lo">33.33%</td></tr>
+        <tr><td>Kano</td><td>58</td><td>18</td><td class="lo">31.03%</td></tr>
+        <tr class="tot"><td>TOTAL</td><td>425</td><td>177</td><td>41.65% avg</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="conv-right reveal">
+    <p class="section-label">Business Impact</p>
+    <h2 class="conv-title">The Recoverable<br/>Revenue Case</h2>
+    <div class="impact-box">
+      <p>A <strong>10 percentage point improvement</strong> in the platform average conversion rate, from 41.65% to ~52%,  across the 425-customer 2024 cohort represents approximately <strong>42 additional first purchases.</strong></p>
+      <p>At the current average order value of ~₦250,000, that translates to approximately <strong>₦10.5 million in incremental revenue</strong> from customers already acquired at zero additional acquisition spend.</p>
+      <div class="impact-num">₦10.5M</div>
+      <div class="impact-desc">Recoverable · Zero new acquisition cost</div>
+    </div>
+  </div>
+</section>
+
+<!-- DATA QUALITY -->
+<section class="quality" id="quality">
+  <p class="section-label reveal">Data Integrity</p>
+  <h2 class="section-title reveal">Data Quality Notes</h2>
+  <p class="reveal" style="color:var(--muted);font-size:.95rem;max-width:600px;line-height:1.75;margin-top:-1rem;">Every issue encountered was documented transparently — including the decision made and the risk if that decision was wrong. This is non-negotiable in professional analysis.</p>
+  <div class="quality-grid">
+    <div class="quality-card reveal">
+      <p class="q-issue">Issue 01</p>
+      <h3 class="q-title">Missing Product Prices : 4 Products, 97 Order Items</h3>
+      <p class="q-body">Four products (PROD0104, PROD0088, PROD0205, PROD0245) across <strong>Home & Garden, Food & Beverages, and Books & Stationery</strong> had no unit_price in the products table; resulting in 97 order items with NULL unit prices and NULL line totals.</p>
+      <div class="q-decision">
+        <p class="q-decision-label">Decision Made</p>
+        <p class="q-decision-body">Excluded unrecoverable NULL-price order items from all revenue calculations to avoid introducing inaccurate figures.</p>
+      </div>
+      <div class="q-risk">
+        <p class="q-risk-label">Risk if Wrong</p>
+        <p class="q-risk-body">If these 97 items had significant values, total platform revenue is understated. A data entry audit of these four products is recommended.</p>
+      </div>
+    </div>
+    <div class="quality-card reveal">
+      <p class="q-issue">Issue 02</p>
+      <h3 class="q-title">Order Amount Mismatches : 9.09% of Orders</h3>
+      <p class="q-body">Approximately <strong>9.09% of orders</strong> showed a difference greater than ₦10 between recorded total_amount and the sum of line items in the order_items table.</p>
+      <div class="q-decision">
+        <p class="q-decision-label">Decision Made</p>
+        <p class="q-decision-body">Flagged mismatched orders with an amount_mismatch column and retained them using total_amount as the authoritative figure since it represents what was charged to the customer.</p>
+      </div>
+      <div class="q-risk">
+        <p class="q-risk-label">Risk if Wrong</p>
+        <p class="q-risk-body">If total_amount was itself incorrectly recorded, revenue could be overstated or understated. A reconciliation against the payments table is recommended.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- RECOMMENDATIONS -->
+<section class="recs" id="recs">
+  <div class="rec-card reveal">
+    <p class="rec-num">RECOMMENDATION 01</p>
+    <div class="rec-owner"><span>→ Head of Growth</span></div>
+    <h3 class="rec-title">Launch a 30-Day First Purchase Activation Programme</h3>
+    <p class="rec-body">Deploy a structured onboarding sequence targeting all newly registered customers who have not purchased within <strong>7 days of sign-up.</strong> Include a time-limited first-purchase incentive (e.g. a ₦2,000 voucher valid 14 days), personalised product recommendations by registration state, and a simplified product discovery experience on first login.</p>
+    <div class="rec-outcome">
+      <p class="rec-outcome-label">Expected Outcome (60–90 Days)</p>
+      <p class="rec-outcome-body">Increase 30-day conversion from <strong>41.65% to at least 55%</strong>  representing approximately <strong>42 additional first purchases and ₦10.5 million in incremental revenue</strong> at current AOV.</p>
+    </div>
+  </div>
+  <div class="rec-card reveal">
+    <p class="rec-num">RECOMMENDATION 02</p>
+    <div class="rec-owner"><span>→ Head of Seller Operations</span></div>
+    <h3 class="rec-title">Introduce a Seller Performance Improvement Programme</h3>
+    <p class="rec-body">Identify all active sellers with average ratings <strong>below 3.5</strong> and initiate a structured improvement programme mandatory quality audit, coaching on listing accuracy and packaging, and a <strong>90-day performance window</strong> to reach 3.8 minimum or face reduced platform visibility. Simultaneously benchmark the top 20 fastest fulfilment sellers and share their practices with high-revenue sellers.</p>
+    <div class="rec-outcome">
+      <p class="rec-outcome-label">Expected Outcome (60–90 Days)</p>
+      <p class="rec-outcome-body">Elimination of sub-3.0 rated sellers from high-visibility placements. Identification of at least <strong>5 sellers who improve both speed and rating</strong> to qualify for a combined performance tier.</p>
+    </div>
+  </div>
+</section>
+
+<!-- UNKNOWN -->
+<section class="unknown reveal">
+  <div>
+    <p class="section-label">Intellectual Honesty</p>
+    <h2 class="unknown-title">What the Data<br/>Cannot <span>Tell Us</span></h2>
+  </div>
+  <div>
+    <p class="unknown-body">Leadership is likely to ask: <strong>which marketing channels are driving the highest-quality customers those who convert fastest and spend the most over time?</strong> The current dataset has no acquisition channel data. We know when a customer signed up and where they are, but not whether they came from paid social, organic search, referral, or offline channels.</p>
+    <p class="unknown-body">This means channel-level acquisition cost, conversion rate, and lifetime value are all currently incalculable; limiting how targeted any intervention can be.</p>
+    <div class="unknown-req">
+      <p class="unknown-req-label">Additional Data Requested</p>
+      <p class="unknown-req-body">A <strong>customer_acquisition table</strong> linking each customer_id to their source channel, campaign identifier, and acquisition cost. With this, budget can be redirected toward channels producing the highest 30-day conversion rates, making Recommendation 1 significantly more cost-efficient.</p>
+    </div>
+  </div>
+</section>
+
+<!-- CONCLUSION -->
+<section class="conclusion" id="conclusion">
+  <div>
+    <p class="section-label reveal">Conclusion</p>
+    <h2 class="section-title reveal">Strong Growth.<br/>Fragile Foundation.</h2>
+    <p class="conc-body reveal">TradeZone enters 2025 with genuine commercial momentum ₦984.7 million in revenue, 280 active products, 90 active sellers, and a Q1 2024 that delivered 1,544% year-over-year order growth. These are not small numbers for a multi-city Nigerian platform.</p>
+    <p class="conc-body reveal">But impressive headline figures can mask structural problems that compound quietly. Three such problems are now visible in the data a conversion gap, a single-engine growth model, and a seller quality imbalance. <strong>All three are fixable.</strong></p>
+    <div class="quote-block reveal">
+      <p class="quote-text">"TradeZone does not have a growth problem. It has a growth quality problem. The platform is acquiring well but activating poorly, growing fast but not deeply. All three recommendations point to the same fix: build depth, not just volume."</p>
+      <p class="quote-author">— Analyst Conclusion</p>
+    </div>
+  </div>
+  <div class="conc-stats reveal">
+    <div class="conc-row">
+      <span class="conc-icon">🏙️</span>
+      <div><p class="conc-heading">5 Cities Analysed</p><p class="conc-detail">Lagos, FCT, Rivers, Oyo, Kano — with state-level conversion breakdowns</p></div>
+    </div>
+    <div class="conc-row">
+      <span class="conc-icon">🔍</span>
+      <div><p class="conc-heading">9 SQL Queries Written</p><p class="conc-detail">All documented, commented, and available in the GitHub repository</p></div>
+    </div>
+    <div class="conc-row">
+      <span class="conc-icon">⚠️</span>
+      <div><p class="conc-heading">2 Data Quality Issues Documented</p><p class="conc-detail">Identified with decisions and risk statements not quietly fixed</p></div>
+    </div>
+    <div class="conc-row">
+      <span class="conc-icon">💰</span>
+      <div><p class="conc-heading">₦10.5M Recoverable Revenue</p><p class="conc-detail">From customers already acquired — zero additional acquisition spend required</p></div>
+    </div>
+    <div class="conc-row">
+      <span class="conc-icon">📊</span>
+      <div><p class="conc-heading">Tools Used</p><p class="conc-detail">SQL for extraction and analysis · Excel for validation and flagging</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <p class="footer-copy">© 2026 Oluwatosin Ogunwale — Data Analyst Portfolio</p>
+  <div class="footer-links">
+    <a href="https://oluwatosin-ogunwale.github.io">← Portfolio</a>
+    <a href="https://github.com/Oluwatosin-ogunwale/tradezone-analysis" target="_blank">GitHub ↗</a>
+    <a href="mailto:oluwatosinogunwale35@gmail.com">Email</a>
+    <a href="#home" onclick="window.scrollTo({top:0,behavior:'smooth'});return false;">↑ Top</a>
+  </div>
+</footer>
+
+<script>
+  const cursor = document.getElementById('cursor');
+  const ring   = document.getElementById('cursorRing');
+  document.addEventListener('mousemove', e => {
+    cursor.style.left = e.clientX + 'px'; cursor.style.top = e.clientY + 'px';
+    setTimeout(() => { ring.style.left = e.clientX + 'px'; ring.style.top = e.clientY + 'px'; }, 80);
+  });
+  document.querySelectorAll('a, button').forEach(el => {
+    el.addEventListener('mouseenter', () => {
+      cursor.style.width = '20px'; cursor.style.height = '20px';
+      ring.style.width = '56px'; ring.style.height = '56px';
+    });
+    el.addEventListener('mouseleave', () => {
+      cursor.style.width = '12px'; cursor.style.height = '12px';
+      ring.style.width = '36px'; ring.style.height = '36px';
+    });
+  });
+  const navbar = document.getElementById('navbar');
+  window.addEventListener('scroll', () => navbar.classList.toggle('scrolled', window.scrollY > 40));
+  const observer = new IntersectionObserver(entries => {
+    entries.forEach((entry, i) => {
+      if (entry.isIntersecting) {
+        setTimeout(() => entry.target.classList.add('visible'), i * 80);
+        observer.unobserve(entry.target);
+      }
+    });
+  }, { threshold:0.1 });
+  document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+</script>
+</body>
+</html>
