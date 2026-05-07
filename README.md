@@ -24,7 +24,7 @@
 | Category | Tools |
 |---|---|
 | **Spreadsheets** | Microsoft Excel (Advanced), Google Sheets |
-| **Query & Databases** | SQL (MySQL, Postgresql|
+| **Query & Databases** | SQL (MySQL, Postgresql)|
 | **Programming** | Python (Pandas, NumPy, Matplotlib, Seaborn) |
 | **Dashboards & BI** | Power BI, Tableau, Excel Dashboards |
 | **Other** | Git, GitHub, Jupyter Notebook, VS Code |
@@ -34,6 +34,8 @@
 ## 📂 Featured Projects
 
 ### 🛒 End to End Coffee Shop Analytics - Profit, Demand and customer insights (https://github.com/Oluwatosin-Ogunwale/CoffeeShopProject)
+### Tradezone E-Commerce Performance Analysis
+(https://github.com/oluwatosin-ogunwale/tradezone-analysis)
 > **Tools:** Excel · Pivot Tables · Dashboard · Data Cleaning
 > Analyzed 4 years of retail sales data across regions and product categories.
 > 📌 **Result:** Identified pricing problem best seller by volume was not the best seller by sale; recommended targeted price review and loyalty program redesign.
