@@ -24,7 +24,7 @@
 | Category | Tools |
 |---|---|
 | **Spreadsheets** | Microsoft Excel (Advanced), Google Sheets |
-| **Query & Databases** | SQL (MySQL) |
+| **Query & Databases** | SQL (MySQL, Postgresql|
 | **Programming** | Python (Pandas, NumPy, Matplotlib, Seaborn) |
 | **Dashboards & BI** | Power BI, Tableau, Excel Dashboards |
 | **Other** | Git, GitHub, Jupyter Notebook, VS Code |
